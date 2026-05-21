@@ -32,7 +32,7 @@
 
 </head>
 <body>
-    <div class="d-flex flex-row justify-content-evenly">
+    <div class="d-flex flex-row justify-content-evenly pb-5">
         <?php
         if ($result->num_rows > 0) {
             while($row = $result->fetch_assoc()) {

@@ -42,7 +42,7 @@
             <a href="movies.php" class="text-danger fs-5">View All →</a>
         </span>
     </div>
-
+    
     <?php
         include "coming_soon.php"
     ?>
