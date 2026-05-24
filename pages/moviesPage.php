@@ -1,5 +1,5 @@
 <?php
-include "conn.php";
+include "../database/conn.php";
 
 $filter = isset($_GET['filter']) ? $_GET['filter'] : 'all';
 
@@ -60,7 +60,7 @@ include 'header.php';
                 while ($row = $result->fetch_assoc()) {
                     echo '
                         <div class="col">
-                            <a href="movie_desc.php?id=' . $row["movie_id"] . '" class="text-decoration-none">
+                            <a href="movieBooking.php?id=' . $row["movie_id"] . '" class="text-decoration-none">
                                 <div class="card h-100 bg-dark hover-zoom border-secondary overflow-hidden shadow">
                                     
                                     <img src="' . $row["poster"] . '" class="card-img-top object-fit-cover" alt="' . $row["title"] . '" style="height: 350px;">
