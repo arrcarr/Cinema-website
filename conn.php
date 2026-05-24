@@ -1,5 +1,5 @@
 <?php
-$servername = "localhost";
+$servername = "localhost:3307";
 $username = "root";
 $password = "";
 $dbname = "db_movie_booking";
@@ -13,8 +13,5 @@ $conn = new mysqli($servername, $username, $password, $dbname);
 // } else{
 //   echo "Connected successfully";
 // }
-
-
-
 
 ?>
