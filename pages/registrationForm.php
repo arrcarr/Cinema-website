@@ -4,8 +4,6 @@ include "../database/conn.php";
 require_once "../validation/verifyOtpEmail.php"; 
 
 if (isset($_POST['register'])) {
-    
-    )
     $fname    = $_POST['fname'];
     $lname    = $_POST['lname'];
     $birthday = $_POST['birthday'];
