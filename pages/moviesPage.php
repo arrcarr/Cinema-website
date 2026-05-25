@@ -1,93 +1,118 @@
 <?php
-include "../database/conn.php";
+session_start();
+require_once '../database/conn.php';
 
-$filter = isset($_GET['filter']) ? $_GET['filter'] : 'all';
+function e($value)
+{
+    return htmlspecialchars((string) $value, ENT_QUOTES, 'UTF-8');
+}
 
-if ($filter == 'now-showing') {
-    $sql = "SELECT movie_id, title, genre, duration, release_date, description, poster, status FROM tb_movie_table WHERE status='released'";
-} elseif ($filter == 'coming-soon') {
-    $sql = "SELECT movie_id, title, genre, duration, release_date, description, poster, status FROM tb_movie_table WHERE status='unreleased'";
+$filter = isset($_POST['filter']) ? $_POST['filter'] : 'all';
+
+if ($filter === 'now-showing') {
+    $sql = "SELECT movie_id, title, genre, duration, release_date, poster, status FROM tb_movie_table WHERE status='released' ORDER BY release_date DESC, title ASC";
+} elseif ($filter === 'coming-soon') {
+    $sql = "SELECT movie_id, title, genre, duration, release_date, poster, status FROM tb_movie_table WHERE status='unreleased' ORDER BY release_date ASC, title ASC";
 } else {
-    $sql = "SELECT movie_id, title, genre, duration, release_date, description, poster, status FROM tb_movie_table";
+    $sql = "SELECT movie_id, title, genre, duration, release_date, poster, status FROM tb_movie_table ORDER BY release_date DESC, title ASC";
 }
 
 $result = $conn->query($sql);
 ?>
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Movies - Absolute Cinema</title>
+    <link rel="stylesheet" href="../assets/css/bootstrap.min.css">
+    <style>
+        body {
+            background: radial-gradient(circle at top, rgba(220, 53, 69, 0.12), transparent 30%), #050505;
+            color: #fff;
+        }
 
-<?php
-include 'header.php';
-?>
+        .page-shell {
+            min-height: calc(100vh - 80px);
+        }
 
-<style>
-    .hover-zoom {
-        transition: transform 0.2s ease-in-out, border-color 0.2s ease-in-out;
-    }
+        .page-card {
+            background: linear-gradient(180deg, rgba(18, 18, 18, 0.98), rgba(10, 10, 10, 0.98));
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 18px 50px rgba(0, 0, 0, 0.4);
+            border-radius: 1.25rem;
+        }
 
-    .hover-zoom:hover {
-        transform: scale(1.03);
-        border-color: var(--bs-danger) !important;
-    }
-</style>
+        .hover-zoom {
+            transition: transform 0.2s ease-in-out, border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+        }
 
-<div class="bg-black min-vh-100 py-5">
-    <div class="container" style="max-width: 1200px;">
-        <h1 class="fw-bold mb-4 text-white">All Movies</h1>
+        .hover-zoom:hover {
+            transform: translateY(-3px);
+            border-color: rgba(220, 53, 69, 0.65) !important;
+            box-shadow: 0 18px 30px rgba(0, 0, 0, 0.35);
+        }
 
-        <ul class="nav nav-underline border-bottom border-secondary mb-4 pb-1 gap-3">
-            <li class="nav-item">
-                <a class="nav-link fw-medium <?php echo ($filter == 'all') ? 'active text-danger border-danger' : 'text-secondary link-light'; ?>"
-                    href="?filter=all">
-                    All Movies
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link fw-medium <?php echo ($filter == 'now-showing') ? 'active text-danger border-danger' : 'text-secondary link-light'; ?>"
-                    href="?filter=now-showing">
-                    Now Showing
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link fw-medium <?php echo ($filter == 'coming-soon') ? 'active text-danger border-danger' : 'text-secondary link-light'; ?>"
-                    href="?filter=coming-soon">
-                    Coming Soon
-                </a>
-            </li>
-        </ul>
+        .movie-poster {
+            height: 350px;
+            object-fit: cover;
+        }
+    </style>
+</head>
+<body>
+    <?php include 'header.php'; ?>
 
-        <div class="row row-cols-2 row-cols-md-3 row-cols-lg-4 g-4">
-            <?php
-            if ($result->num_rows > 0) {
-                while ($row = $result->fetch_assoc()) {
-                    echo '
-                        <div class="col">
-                            <a href="movieBooking.php?id=' . $row["movie_id"] . '" class="text-decoration-none">
-                                <div class="card h-100 bg-dark hover-zoom border-secondary overflow-hidden shadow">
-                                    
-                                    <img src="' . $row["poster"] . '" class="card-img-top object-fit-cover" alt="' . $row["title"] . '" style="height: 350px;">
-                                    
+    <main class="container py-5 page-shell" style="max-width: 1200px;">
+        <div class="d-flex flex-wrap justify-content-between align-items-end gap-3 mb-4">
+            <div>
+                <h1 class="fw-bold mb-1">Movies</h1>
+                <p class="text-white-50 mb-0">Browse the catalog and open a movie to start booking.</p>
+            </div>
+        </div>
+
+        <div class="page-card p-3 p-md-4 mb-4">
+            <form method="POST" action="" class="d-flex flex-wrap gap-2">
+                <button type="submit" name="filter" value="all" class="btn rounded-pill <?php echo ($filter === 'all') ? 'btn-danger text-white' : 'btn-outline-secondary'; ?>">All Movies</button>
+                <button type="submit" name="filter" value="now-showing" class="btn rounded-pill <?php echo ($filter === 'now-showing') ? 'btn-danger text-white' : 'btn-outline-secondary'; ?>">Now Showing</button>
+                <button type="submit" name="filter" value="coming-soon" class="btn rounded-pill <?php echo ($filter === 'coming-soon') ? 'btn-danger text-white' : 'btn-outline-secondary'; ?>">Coming Soon</button>
+            </form>
+        </div>
+
+        <div class="row row-cols-1 row-cols-sm-2 row-cols-lg-4 g-4">
+            <?php if ($result && $result->num_rows > 0): ?>
+                <?php while ($row = $result->fetch_assoc()): ?>
+                    <div class="col">
+                        <form method="POST" action="movieBooking.php" class="h-100">
+                            <input type="hidden" name="movie_id" value="<?php echo (int) $row['movie_id']; ?>">
+                            <button type="submit" class="btn p-0 w-100 h-100 text-start border-0 bg-transparent">
+                                <div class="card h-100 bg-dark border-secondary overflow-hidden shadow hover-zoom">
+                                    <img src="<?php echo e($row['poster']); ?>" class="card-img-top movie-poster" alt="<?php echo e($row['title']); ?>">
                                     <div class="card-body d-flex flex-column">
-                                        <h5 class="card-title text-truncate fw-bold text-white mb-1">' . $row["title"] . '</h5>
-                                        <p class="card-text text-secondary mb-3 text-capitalize small">' . $row["genre"] . '</p>
-                                        
+                                        <div class="d-flex justify-content-between align-items-start gap-2 mb-2">
+                                            <h5 class="card-title text-truncate fw-bold text-white mb-0"><?php echo e($row['title']); ?></h5>
+                                            <span class="badge rounded-pill text-bg-<?php echo ($row['status'] === 'released') ? 'danger' : 'secondary'; ?> text-uppercase"><?php echo e($row['status']); ?></span>
+                                        </div>
+                                        <p class="card-text text-secondary mb-3 text-capitalize small"><?php echo e($row['genre']); ?></p>
                                         <div class="mt-auto d-flex justify-content-between align-items-center text-secondary small">
-                                            <span>' . $row["duration"] . '</span>
-                                            <span>' . $row["release_date"] . '</span>
+                                            <span><?php echo e($row['duration']); ?></span>
+                                            <span><?php echo e(date('M d, Y', strtotime($row['release_date']))); ?></span>
                                         </div>
                                     </div>
-                                    
                                 </div>
-                            </a>
-                        </div>
-                    ';
-                }
-            } else {
-                echo '
-                    <div class="col-12 text-center py-5">
-                        <p class="text-secondary fs-5">No movies found</p>
+                            </button>
+                        </form>
                     </div>
-                ';
-            }
-            ?>
+                <?php endwhile; ?>
+            <?php else: ?>
+                <div class="col-12 text-center py-5">
+                    <div class="page-card p-5">
+                        <p class="text-secondary fs-5 mb-0">No movies found</p>
+                    </div>
+                </div>
+            <?php endif; ?>
         </div>
-    </div>
-</div>
+    </main>
+
+    <script src="../assets/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

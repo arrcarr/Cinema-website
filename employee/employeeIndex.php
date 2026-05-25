@@ -1,8 +1,63 @@
 <?php
 session_start();
-// Temporary override for testing. 
-$_SESSION['userType'] = 'employee';
 include "../database/conn.php";
+
+function writeBookingActionLog($conn, $action, $description)
+{
+    $userId = (int) ($_SESSION['user_id'] ?? 0);
+    if ($userId <= 0) {
+        return;
+    }
+
+    $stmt = $conn->prepare('INSERT INTO system_logs (user_id, action, description) VALUES (?, ?, ?)');
+    if (!$stmt) {
+        return;
+    }
+
+    $stmt->bind_param('iss', $userId, $action, $description);
+    $stmt->execute();
+    $stmt->close();
+}
+
+$message = '';
+
+if (isset($_POST['approve_booking']) || isset($_POST['reject_booking'])) {
+    $bookingId = (int) ($_POST['booking_id'] ?? 0);
+    $newStatus = isset($_POST['approve_booking']) ? 'Approved' : 'Rejected';
+
+    if ($bookingId > 0) {
+        $stmt = $conn->prepare('UPDATE booking SET status = ? WHERE booking_id = ?');
+        if ($stmt) {
+            $stmt->bind_param('si', $newStatus, $bookingId);
+            if ($stmt->execute()) {
+                $message = 'Reservation updated.';
+                writeBookingActionLog($conn, $newStatus === 'Approved' ? 'Approve Booking' : 'Reject Booking', $newStatus . ' booking #' . $bookingId);
+            }
+            $stmt->close();
+        }
+    }
+}
+
+$activeMovies = 0;
+$pendingReservations = 0;
+$todaysShowtimes = 0;
+
+$activeMoviesResult = $conn->query("SELECT COUNT(*) AS total FROM tb_movie_table WHERE status='released'");
+if ($activeMoviesResult) {
+    $activeMovies = (int) ($activeMoviesResult->fetch_assoc()['total'] ?? 0);
+}
+
+$pendingReservationsResult = $conn->query("SELECT COUNT(*) AS total FROM booking WHERE LOWER(COALESCE(status, 'pending')) = 'pending'");
+if ($pendingReservationsResult) {
+    $pendingReservations = (int) ($pendingReservationsResult->fetch_assoc()['total'] ?? 0);
+}
+
+$todaysShowtimesResult = $conn->query("SELECT COUNT(*) AS total FROM showtime WHERE show_date = CURDATE()");
+if ($todaysShowtimesResult) {
+    $todaysShowtimes = (int) ($todaysShowtimesResult->fetch_assoc()['total'] ?? 0);
+}
+
+$pendingRows = $conn->query("SELECT b.booking_id, u.email, m.title, s.show_date, s.show_time, GROUP_CONCAT(st.seat_number ORDER BY st.seat_number SEPARATOR ', ') AS seats FROM booking b INNER JOIN user u ON u.user_id = b.user_id INNER JOIN tb_movie_table m ON m.movie_id = b.movie_id INNER JOIN showtime s ON s.showtime_id = b.showtime_id INNER JOIN seat st ON st.seat_id = b.seat_id WHERE LOWER(COALESCE(b.status, 'pending')) = 'pending' GROUP BY b.booking_id, u.email, m.title, s.show_date, s.show_time ORDER BY b.booking_date DESC LIMIT 5");
 ?>
 <!DOCTYPE html>
 <html lang="en" data-bs-theme="dark">
@@ -25,23 +80,27 @@ include "../database/conn.php";
             <span class="badge bg-secondary fs-6 px-3 py-2">Staff Member</span>
         </div>
 
+        <?php if (!empty($message)): ?>
+            <div class="alert alert-success border-0 shadow-sm fw-bold"><?php echo htmlspecialchars($message); ?></div>
+        <?php endif; ?>
+
         <div class="row g-4 mb-5">
             <div class="col-md-4">
                 <div class="card bg-black border-secondary p-4 h-100 shadow">
                     <h5 class="text-secondary fw-bold text-uppercase mb-3">Active Movies</h5>
-                    <h2 class="display-5 fw-bold text-white mb-0">8</h2>
+                    <h2 class="display-5 fw-bold text-white mb-0"><?php echo $activeMovies; ?></h2>
                 </div>
             </div>
             <div class="col-md-4">
                 <div class="card bg-black border-secondary p-4 h-100 shadow border-warning">
                     <h5 class="text-warning fw-bold text-uppercase mb-3">Pending Reservations</h5>
-                    <h2 class="display-5 fw-bold text-white mb-0">14</h2>
+                    <h2 class="display-5 fw-bold text-white mb-0"><?php echo $pendingReservations; ?></h2>
                 </div>
             </div>
             <div class="col-md-4">
                 <div class="card bg-black border-secondary p-4 h-100 shadow">
                     <h5 class="text-secondary fw-bold text-uppercase mb-3">Today's Showtimes</h5>
-                    <h2 class="display-5 fw-bold text-white mb-0">12</h2>
+                    <h2 class="display-5 fw-bold text-white mb-0"><?php echo $todaysShowtimes; ?></h2>
                 </div>
             </div>
         </div>
@@ -60,30 +119,28 @@ include "../database/conn.php";
                     </tr>
                 </thead>
                 <tbody>
-                    <tr>
-                        <td class="align-middle">#1024</td>
-                        <td class="align-middle">johndoe@email.com</td>
-                        <td class="align-middle">Taxi Driver</td>
-                        <td class="align-middle">Apr 15, 2026 - 8:00 PM</td>
-                        <td class="align-middle">D4, D5</td>
-                        <td class="align-middle">
-                            <button class="btn btn-sm btn-success fw-bold me-1"><i class="bi bi-check-lg"></i>
-                                Approve</button>
-                            <button class="btn btn-sm btn-danger fw-bold"><i class="bi bi-x-lg"></i> Reject</button>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td class="align-middle">#1025</td>
-                        <td class="align-middle">janedoe@email.com</td>
-                        <td class="align-middle">The Mummy</td>
-                        <td class="align-middle">Apr 15, 2026 - 9:30 PM</td>
-                        <td class="align-middle">F10</td>
-                        <td class="align-middle">
-                            <button class="btn btn-sm btn-success fw-bold me-1"><i class="bi bi-check-lg"></i>
-                                Approve</button>
-                            <button class="btn btn-sm btn-danger fw-bold"><i class="bi bi-x-lg"></i> Reject</button>
-                        </td>
-                    </tr>
+                    <?php if ($pendingRows && $pendingRows->num_rows > 0): ?>
+                        <?php while ($row = $pendingRows->fetch_assoc()): ?>
+                            <tr>
+                                <td class="align-middle">#<?php echo $row['booking_id']; ?></td>
+                                <td class="align-middle"><?php echo htmlspecialchars($row['email']); ?></td>
+                                <td class="align-middle"><?php echo htmlspecialchars($row['title']); ?></td>
+                                <td class="align-middle"><?php echo date('M d, Y - g:i A', strtotime($row['show_date'] . ' ' . $row['show_time'])); ?></td>
+                                <td class="align-middle"><?php echo htmlspecialchars($row['seats'] ?? ''); ?></td>
+                                <td class="align-middle">
+                                    <form method="POST" class="d-inline">
+                                        <input type="hidden" name="booking_id" value="<?php echo (int) $row['booking_id']; ?>">
+                                        <button type="submit" name="approve_booking" class="btn btn-sm btn-success fw-bold me-1"><i class="bi bi-check-lg"></i> Approve</button>
+                                        <button type="submit" name="reject_booking" class="btn btn-sm btn-danger fw-bold"><i class="bi bi-x-lg"></i> Reject</button>
+                                    </form>
+                                </td>
+                            </tr>
+                        <?php endwhile; ?>
+                    <?php else: ?>
+                        <tr>
+                            <td colspan="6" class="text-center py-5 text-secondary">No pending reservations.</td>
+                        </tr>
+                    <?php endif; ?>
                 </tbody>
             </table>
         </div>

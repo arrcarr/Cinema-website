@@ -1,8 +1,8 @@
 <?php
 session_start();
 
-// Strict Admin Check
-if (!isset($_SESSION['userType']) || $_SESSION['userType'] !== 'admin') {
+//Admin check
+if (!isset($_SESSION['userType']) || !in_array(strtolower((string) $_SESSION['userType']), ['admin', 'administrator'], true)) {
     die("<h2 style='color:red; text-align:center; margin-top:50px;'>Access Denied. Admins Only.</h2>");
 }
 

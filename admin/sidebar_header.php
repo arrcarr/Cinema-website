@@ -1,27 +1,37 @@
 <?php
-// We check the session variable 'userType' (which should be set during login)
-// For testing, you can force this to 'admin' or 'employee'
-$userType = isset($_SESSION['userType']) ? $_SESSION['userType'] : 'employee';
+$rawUserType = strtolower((string) ($_SESSION['userType'] ?? 'employee'));
+if ($rawUserType === 'administrator') {
+    $rawUserType = 'admin';
+}
+
+$userType = in_array($rawUserType, ['admin', 'employee'], true) ? $rawUserType : 'employee';
+$currentPage = basename($_SERVER['PHP_SELF']);
+
+function isSidebarActive($currentPage, $targets)
+{
+    return in_array($currentPage, (array) $targets, true) ? 'active' : '';
+}
 ?>
 <style>
     .sidebar {
         width: 280px;
         height: 100vh;
-        /* Lock height to the viewport */
         position: sticky;
-        /* Keep it on screen when scrolling */
         top: 0;
-        /* Anchor it to the top */
-        overflow-y: auto;
-        /* Allow internal scrolling if menu gets too long */
+        display: flex;
+        flex-direction: column;
     }
 
-    /* Optional: Custom scrollbar styling for the sidebar to keep it looking clean */
-    .sidebar::-webkit-scrollbar {
+    .sidebar-menu {
+        flex: 1 1 auto;
+        overflow-y: auto;
+    }
+
+    .sidebar-menu::-webkit-scrollbar {
         width: 6px;
     }
 
-    .sidebar::-webkit-scrollbar-thumb {
+    .sidebar-menu::-webkit-scrollbar-thumb {
         background-color: #495057;
         border-radius: 4px;
     }
@@ -36,7 +46,6 @@ $userType = isset($_SESSION['userType']) ? $_SESSION['userType'] : 'employee';
 
     .sidebar .nav-link.active {
         background-color: #dc3545 !important;
-        /* Bootstrap danger red */
         color: white !important;
     }
 </style>
@@ -47,68 +56,92 @@ $userType = isset($_SESSION['userType']) ? $_SESSION['userType'] : 'employee';
         <span class="fs-4 fw-bold">ABSOLUTE <span class="text-danger">CINEMA</span></span>
     </a>
 
-    <div class="text-secondary small fw-bold text-uppercase mb-3">Menu</div>
+    <div class="sidebar-menu pe-1">
+        <div class="text-secondary small fw-bold text-uppercase mb-3">Menu</div>
 
-    <ul class="nav nav-pills flex-column mb-auto gap-2">
+        <ul class="nav nav-pills flex-column mb-auto gap-2">
+        <?php if ($userType === 'employee'): ?>
         <li class="nav-item">
-            <a href="../employee/employeeIndex.php" class="nav-link text-white active">
+            <a href="../employee/employeeIndex.php" class="nav-link text-white <?php echo isSidebarActive($currentPage, 'employeeIndex.php'); ?>">
                 <i class="bi bi-speedometer2 me-2"></i> Dashboard
             </a>
         </li>
         <li>
-            <a href="../employee/employeeMovies.php" class="nav-link text-white">
+            <a href="../employee/employeeMovies.php" class="nav-link text-white <?php echo isSidebarActive($currentPage, 'employeeMovies.php'); ?>">
                 <i class="bi bi-camera-reels me-2"></i> Movies
             </a>
         </li>
         <li>
-            <a href="../employee/employeeTheaters.php" class="nav-link text-white">
+            <a href="../employee/employeeTheaters.php" class="nav-link text-white <?php echo isSidebarActive($currentPage, 'employeeTheaters.php'); ?>">
                 <i class="bi bi-building me-2"></i> Theaters
             </a>
         </li>
         <li>
-            <a href="../employee/employeeShowtime.php" class="nav-link text-white">
+            <a href="../employee/employeeShowtime.php" class="nav-link text-white <?php echo isSidebarActive($currentPage, 'employeeShowtime.php'); ?>">
                 <i class="bi bi-clock-history me-2"></i> Showtimes
             </a>
         </li>
         <li>
-            <a href="../employee/employeeReservations.php" class="nav-link text-white">
+            <a href="../employee/employeeReservations.php" class="nav-link text-white <?php echo isSidebarActive($currentPage, 'employeeReservations.php'); ?>">
                 <i class="bi bi-ticket-detailed me-2"></i> Reservations
             </a>
         </li>
 
-        <?php if ($userType === 'admin'): ?>
+        <?php elseif ($userType === 'admin'): ?>
+        <li class="nav-item">
+            <a href="../admin/adminIndex.php" class="nav-link text-white <?php echo isSidebarActive($currentPage, 'adminIndex.php'); ?>">
+                <i class="bi bi-speedometer2 me-2"></i> Dashboard
+            </a>
+        </li>
+        <li>
+            <a href="../employee/employeeMovies.php" class="nav-link text-white <?php echo isSidebarActive($currentPage, 'employeeMovies.php'); ?>">
+                <i class="bi bi-camera-reels me-2"></i> Movies
+            </a>
+        </li>
+        <li>
+            <a href="../employee/employeeTheaters.php" class="nav-link text-white <?php echo isSidebarActive($currentPage, 'employeeTheaters.php'); ?>">
+                <i class="bi bi-building me-2"></i> Theaters
+            </a>
+        </li>
+        <li>
+            <a href="../employee/employeeShowtime.php" class="nav-link text-white <?php echo isSidebarActive($currentPage, 'employeeShowtime.php'); ?>">
+                <i class="bi bi-clock-history me-2"></i> Showtimes
+            </a>
+        </li>
+        <li>
+            <a href="../employee/employeeReservations.php" class="nav-link text-white <?php echo isSidebarActive($currentPage, 'employeeReservations.php'); ?>">
+                <i class="bi bi-ticket-detailed me-2"></i> Reservations
+            </a>
+        </li>
             <li class="mt-3">
                 <div class="text-secondary small fw-bold text-uppercase mb-2 px-3">System Access</div>
             </li>
             <li>
-                <a href="../admin/adminUser.php" class="nav-link text-white">
+                <a href="../admin/adminUser.php" class="nav-link text-white <?php echo isSidebarActive($currentPage, 'adminUser.php'); ?>">
                     <i class="bi bi-people me-2"></i> Users
                 </a>
             </li>
             <li>
-                <a href="../admin/adminLogs.php" class="nav-link text-white">
+                <a href="../admin/adminLogs.php" class="nav-link text-white <?php echo isSidebarActive($currentPage, 'adminLogs.php'); ?>">
                     <i class="bi bi-journal-text me-2"></i> Logs
                 </a>
             </li>
         <?php endif; ?>
-    </ul>
+            </ul>
+        </div>
 
-    <hr class="border-secondary">
-    <div class="dropdown">
-        <a href="#" class="d-flex align-items-center text-white text-decoration-none dropdown-toggle"
-            data-bs-toggle="dropdown" aria-expanded="false">
-            <img src="https://ui-avatars.com/api/?name=<?php echo $userType; ?>&background=random" alt="" width="32"
-                height="32" class="rounded-circle me-2">
-            <strong class="text-capitalize">
-                <?php echo $userType; ?>
-            </strong>
-        </a>
-        <ul class="dropdown-menu dropdown-menu-dark text-small shadow">
-            <li><a class="dropdown-item" href="#">Profile</a></li>
-            <li>
-                <hr class="dropdown-divider">
-            </li>
-            <li><a class="dropdown-item" href="../logout.php">Sign out</a></li>
-        </ul>
-    </div>
+        <div class="mt-auto pt-3 border-top border-secondary">
+            <div class="d-flex align-items-center text-white mb-3">
+                <img src="https://ui-avatars.com/api/?name=<?php echo $userType; ?>&background=random" alt="" width="32"
+                    height="32" class="rounded-circle me-2">
+                <strong class="text-capitalize"><?php echo $userType; ?></strong>
+            </div>
+            <form action="../pages/logout.php" method="POST" class="m-0">
+                <button type="submit" class="btn btn-danger w-100 fw-semibold">
+                    <i class="bi bi-box-arrow-right me-2"></i> Sign out
+                </button>
+            </form>
+        </div>
 </div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
