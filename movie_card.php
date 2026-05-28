@@ -37,7 +37,7 @@ $result = $conn->query($sql);
             while ($row = $result->fetch_assoc()) {
                 echo '
                     <div class="card bg-dark text-white zoom" style="width:20%">
-                    <a href="movie_desc.php?' . $row["movie_id"] . '">
+                    <a href="movieBooking.php?' . $row["movie_id"] . '">
                         <img src="' . $row["poster"] . '" class="card-img-top" alt="...">
                         
                         <div class="card-body">

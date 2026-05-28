@@ -107,7 +107,7 @@ $selectedShowtimeId = (int) ($_POST['showtime_id'] ?? $_SESSION['selected_showti
 $selectedSeatIds = [];
 $formError = '';
 
-if ($movieId <= 0) {
+if ($movieId <= -1) {
 	$movie = null;
 } else {
 	$movieStmt = $conn->prepare('SELECT movie_id, title, genre, duration, release_date, description, poster, status FROM tb_movie_table WHERE movie_id = ? LIMIT 1');
