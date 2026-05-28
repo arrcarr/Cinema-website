@@ -31,6 +31,9 @@ $users = $conn->query("SELECT * FROM user");
     <div class="flex-grow-1 p-5 overflow-auto">
         <div class="d-flex justify-content-between align-items-center mb-4 border-bottom border-secondary pb-3">
             <h1 class="fw-bold text-danger">Manage Users</h1>
+                <form action="EmployeeRegistrationForm.php" method="post">
+                    <input type="submit" value="Create Employee Account" class="btn btn-danger">
+                </form>
         </div>
         <div class="card bg-black border-danger overflow-hidden shadow">
             <table class="table table-dark table-hover mb-0 align-middle">
