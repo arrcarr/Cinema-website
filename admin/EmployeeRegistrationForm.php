@@ -9,6 +9,7 @@ if (isset($_POST['register'])) {
     $birthday = $_POST['birthday'];
     $email    = $_POST['email'];
     $username = $_POST['username'];
+    $role     = $_POST['role'];
 
     
     $password = md5($_POST['password']);
@@ -39,18 +40,17 @@ if (isset($_POST['register'])) {
             }
 
             
-            $otp = rand(100000, 999999);
 
             
             $insert_sql = "INSERT INTO user 
-                (`username`, `email`, `userType`, `password`, `fname`, `lname`, `birthday`, `pfp_imgPath`, `otp`, `status`) 
+                (`username`, `email`, `userType`, `password`, `fname`, `lname`, `birthday`, `pfp_imgPath`, `status`) 
                 VALUES 
-                ('$username', '$email', 'Employee', '$password', '$fname', '$lname', '$birthday', '$pfp_imgPath', '$otp', 'pending')";
+                ('$username', '$email', '$role', '$password', '$fname', '$lname', '$birthday', '$pfp_imgPath', 'Active')";
 
             if ($conn->query($insert_sql) === TRUE) {
                 
                 
-                send_verification($fullname, $email, $otp);
+                // send_verification($fullname, $email, $otp);
                 
                 echo '<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>';
                 echo '<script>
@@ -59,7 +59,7 @@ if (isset($_POST['register'])) {
                                 position: "center",
                                 icon: "success",
                                 title: "Registered Successfully",
-                                text: "Please check your email for the OTP.",
+                                text: "Account Successfully Created.",
                                 background: "#0f0f0f",
                                 color: "#ffffff",
                                 iconColor: "#dc3545",
@@ -68,7 +68,7 @@ if (isset($_POST['register'])) {
                                 timer: 2000,
                                 timerProgressBar: true
                             }).then(() => {
-                                window.location.href = "../validation/otpVerification.php";
+                                window.location.href = "../admin/adminUser.php";
                             });
                         });
                       </script>';
@@ -135,10 +135,23 @@ if (isset($_POST['register'])) {
                 </div>
 
                 <div class="mb-4">
+                    <label for="" class="form-label text-secondary mb-2 small fw-medium">User type</label> <br>
+                    <input type="radio" name="role" value="User" id="user" class="form-label">
+                    <label for="user">User</label> <br>
+                    
+                    <input type="radio" name="role" value="Employee" id="Employee" class="form-label">
+                    <label for="Employee">Employee</label> <br>
+
+                    <input type="radio" name="role" value="Administrator" id="Administrator" class="form-label">
+                    <label for="Administrator">Administrator</label> <br>
+
+                </div>
+
+                <div class="mb-4">
                     <label class="form-label text-secondary mb-2 small fw-medium">Profile Picture</label>
                     <input type="file" name="upload_img" class="form-control py-2 rounded-3 text-white standard-input" accept="image/*">
                 </div>
-
+                
                 <hr class="border-secondary mb-4">
 
                 <div class="row g-3 mb-3">
