@@ -147,7 +147,7 @@ $movies = $conn->query("SELECT * FROM tb_movie_table ORDER BY movie_id DESC");
                             </td>
                             <td>
                                 <button class="btn btn-sm btn-outline-light me-1" data-bs-toggle="modal" data-bs-target="#editMovieModal<?php echo $row['movie_id']; ?>"><i class="bi bi-pencil"></i></button>
-                                <form method="POST" class="d-inline">
+                                <form method="POST" class="d-inline" enctype="multipart/form-data"> 
                                     <input type="hidden" name="movie_id" value="<?php echo $row['movie_id']; ?>">
                                     <button type="submit" name="delete_movie" class="btn btn-sm btn-outline-danger" onclick="return confirm('Delete this movie?');"><i class="bi bi-trash"></i></button>
                                 </form>
