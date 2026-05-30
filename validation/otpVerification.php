@@ -1,17 +1,14 @@
 <?php
 session_start();
-require_once "../database/conn.php"; // Adjust path if needed
+require_once "../database/conn.php";
 
 if(isset($_POST['ver'])){
-    // User input (raw OTP from the form)
     $otp_input = trim($_POST['otp']);
 
-    // Check against the 'user' table
     $otpsql = "SELECT * FROM `user` WHERE `otp` = '".$otp_input."'";
     $result = $conn->query($otpsql);
 
     if ($result->num_rows == 1) {
-        // Change otp field to null and status to active
         $updatesql= "UPDATE `user` SET `otp` = NULL , `status` = 'Active' WHERE `otp` = '".$otp_input."'";
         $conn->query($updatesql);
 
@@ -31,7 +28,7 @@ if(isset($_POST['ver'])){
                         timer: 2000,
                         timerProgressBar: true
                     }).then(() => {
-                        window.location.href = "../pages/login.php"; // Redirect to login
+                        window.location.href = "../pages/login.php";
                     });
                 });
               </script>';

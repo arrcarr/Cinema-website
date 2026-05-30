@@ -1,7 +1,6 @@
 <?php
 session_start();
 
-//Admin check
 if (!isset($_SESSION['userType']) || !in_array(strtolower((string) $_SESSION['userType']), ['admin', 'administrator'], true)) {
     die("<h2 style='color:red; text-align:center; margin-top:50px;'>Access Denied. Admins Only.</h2>");
 }
@@ -107,7 +106,7 @@ $users = $conn->query("SELECT * FROM user");
     </div>
 
     <?php
-    $users->data_seek(0); // Reset database pointer to reuse the dataset
+        $users->data_seek(0);
     while ($row = $users->fetch_assoc()):
     ?>
         <div class="modal fade" id="editUserModal<?php echo $row['user_id']; ?>" tabindex="-1" aria-hidden="true">

@@ -132,7 +132,7 @@ function isSidebarActive($currentPage, $targets)
 
         <div class="mt-auto pt-3 border-top border-secondary">
             <div class="d-flex align-items-center text-white mb-3">
-                <img src="https://ui-avatars.com/api/?name=<?php echo $userType; ?>&background=random" alt="" width="32"
+                <img src="../assets/icons/user.png" alt="" width="32"
                     height="32" class="rounded-circle me-2">
                 <strong class="text-capitalize"><?php echo $userType; ?></strong>
             </div>

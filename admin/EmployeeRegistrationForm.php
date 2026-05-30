@@ -59,8 +59,6 @@ if (isset($_POST['register'])) {
             if ($conn->query($insert_sql) === TRUE) {
                 
                 
-                // send_verification($fullname, $email, $otp);
-                
                 echo '<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>';
                 echo '<script>
                         document.addEventListener("DOMContentLoaded", function() {

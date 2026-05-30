@@ -12,12 +12,15 @@
             height: 500px;
             background-size: cover;
             background-position: center;
+            position: relative;
         }
         .carousel-overlay {
+            position: absolute;
+            inset: 0;
             background: linear-gradient(to right, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.6) 50%, rgba(0,0,0,0) 100%);
-            height: 100%;
-            width: 100%;
-            
+            display: flex;
+            align-items: center;
+            padding-left: 2rem;
         }
     </style>
 </head>
@@ -25,28 +28,54 @@
 <body class="bg-black text-white">
     <?php include "header.php"; ?>
 
-    <div id="heroCarousel" class="carousel slide" data-bs-ride="carousel">
+    <div id="heroCarousel" class="carousel slide carousel-fade" data-bs-ride="carousel">
+        <?php
+            $bgDir = realpath(__DIR__ . '/../assets/backgrounds');
+            $images = [];
+            if ($bgDir && is_dir($bgDir)) {
+                $files = glob($bgDir . '/*.{jpg,jpeg,png,gif}', GLOB_BRACE);
+                if ($files !== false) {
+                    sort($files);
+                    foreach ($files as $f) {
+                        $images[] = '../assets/backgrounds/' . basename($f);
+                    }
+                }
+            }
+            if (empty($images)) {
+                $images[] = '../assets/backgrounds/banner.jpg';
+            }
+            if (count($images) > 1) {
+                $second = $images[1];
+                array_splice($images, 1, 1);
+                array_unshift($images, $second);
+            }
+            $static_title = 'Welcome to ABSOLUTE Cinema!';
+            $static_subtitle = 'Bringing the best of Cinema to You!';
+        ?>
+
         <div class="carousel-indicators">
-            <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="0" class="active" aria-current="true"></button>
-            <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="1"></button>
-            <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="2"></button>
+            <?php foreach ($images as $i => $img): ?>
+                <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="<?php echo $i; ?>" class="<?php echo $i === 0 ? 'active' : ''; ?>" <?php echo $i === 0 ? 'aria-current="true"' : ''; ?> aria-label="Slide <?php echo $i+1; ?>"></button>
+            <?php endforeach; ?>
         </div>
-        
+
         <div class="carousel-inner">
-            <div class="carousel-item active" style="background-image: url('../assets/backgrounds/banner.jpg');">
-                <div class="carousel-overlay d-flex align-items-center">
-                    <div class="container px-5">
-                        <div class="max-w-2xl">
-                            <h1 class="display-4 fw-bold text-white mb-3">Welcome to ABSOLUTE Cinema!</h1>
-                            <p class="fs-4 text-secondary mb-4">Bringing the best of Cinema to You!</p>
-                            <div class="d-flex gap-3">
-                                <a href="moviesPage.php" class="btn btn-danger btn-lg px-4">Browse Movies</a>
+            <?php foreach ($images as $i => $img): ?>
+                <div class="carousel-item <?php echo $i === 0 ? 'active' : ''; ?>" style="background-image: url('<?php echo htmlspecialchars($img, ENT_QUOTES, 'UTF-8'); ?>');">
+                    <div class="carousel-overlay">
+                        <div class="container px-5">
+                            <div>
+                                <h1 class="display-4 fw-bold text-white mb-3"><?php echo htmlspecialchars($static_title, ENT_QUOTES, 'UTF-8'); ?></h1>
+                                <p class="fs-4 text-secondary mb-4"><?php echo htmlspecialchars($static_subtitle, ENT_QUOTES, 'UTF-8'); ?></p>
+                                <div class="d-flex gap-3">
+                                    <a href="moviesPage.php" class="btn btn-danger btn-lg px-4">Browse Movies</a>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>
-            </div>
+            <?php endforeach; ?>
+        </div>
 
         <button class="carousel-control-prev" type="button" data-bs-target="#heroCarousel" data-bs-slide="prev">
             <span class="carousel-control-prev-icon" aria-hidden="true"></span>

@@ -57,7 +57,7 @@ if (isset($_POST['username']) && isset($_POST['password'])) {
 
     <style>
         body {
-            background-color: #050505; /* Slightly deeper black for contrast */
+            background-color: #050505;
         }
         
        

@@ -35,7 +35,6 @@ if (isset($_POST['update_password'])) {
         $alert_type = "danger";
         $alert_message = "Security Error: The new passwords do not match.";
     } else {
-        // Update password
         $update_stmt = $conn->prepare("UPDATE user SET password = ? WHERE user_id = ?");
         $update_stmt->bind_param("si", $new_password, $user_id);
         if ($update_stmt->execute()) {
@@ -89,11 +88,11 @@ function resolve_profile_picture_src($pfpPath, $username)
     $pfpPath = trim((string) $pfpPath);
 
     if ($pfpPath === '') {
-        return 'https://ui-avatars.com/api/?name=' . rawurlencode((string) $username) . '&background=dc3545&color=fff&size=150';
+        return '../assets/icons/user.png';
     }
 
     if (preg_match('#^https?://#i', $pfpPath)) {
-        return $pfpPath;
+        return '../assets/icons/user.png';
     }
 
     $normalizedPath = ltrim($pfpPath, '/');
@@ -172,7 +171,6 @@ function resolve_profile_picture_src($pfpPath, $username)
                 <div class="dashboard-card p-4 text-center h-100">
                     
                     <?php 
-                        // Determine profile picture or fallback to initials/placeholder
                         $pfp = resolve_profile_picture_src($user['pfp_imgPath'] ?? '', $user['username'] ?? 'User');
                     ?>
                     <img src="<?php echo htmlspecialchars($pfp, ENT_QUOTES, 'UTF-8'); ?>" class="rounded-circle profile-img shadow mb-3" alt="Profile Picture">

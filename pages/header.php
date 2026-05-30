@@ -4,6 +4,10 @@ if (session_status() === PHP_SESSION_NONE) {
 }
 ?>
 
+<style>
+.carousel.carousel-fade .carousel-item{transition:opacity .8s ease-in-out}
+</style>
+
 <nav class="navbar navbar-expand-lg navbar-dark bg-black border-bottom border-secondary border-opacity-25">
     <div class="container py-2">
         <a class="navbar-brand text-white fs-4 fw-bold d-flex align-items-center gap-2" href="index.php">

@@ -3,10 +3,8 @@ session_start();
 include "../database/conn.php";
 
 $message = '';
-//generation of seat based on number admin set
 function generate_seats_for_theater($conn, $theater_id)
 {
-    
     $theater_id = intval($theater_id);
     if ($theater_id <= 0) return;
 
@@ -47,7 +45,6 @@ if (isset($_POST['add_showtime'])) {
     $show_time = $_POST['show_time'];
     $available_seats = intval($_POST['available_seats']);
     $conn->query("INSERT INTO showtime (movie_id, theater_id, show_date, show_time, available_seats) VALUES ('$movie_id', '$theater_id', '$show_date', '$show_time', '$available_seats')");
-    // Ensure theater seats exist (auto-generate up to capacity)
     generate_seats_for_theater($conn, $theater_id);
     $message = 'Showtime added.';
 }
@@ -60,7 +57,6 @@ if (isset($_POST['update_showtime'])) {
     $show_time = $_POST['show_time'];
     $available_seats = intval($_POST['available_seats']);
     $conn->query("UPDATE showtime SET movie_id = '$movie_id', theater_id = '$theater_id', show_date = '$show_date', show_time = '$show_time', available_seats = '$available_seats' WHERE showtime_id = '$id'");
-    // Ensure theater seats exist (auto-generate up to capacity)
     generate_seats_for_theater($conn, $theater_id);
     $message = 'Showtime updated.';
 }

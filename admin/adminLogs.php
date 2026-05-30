@@ -1,14 +1,12 @@
 <?php
 session_start();
 
-//Checks if user is an admin
 if (!isset($_SESSION['userType']) || !in_array(strtolower((string) $_SESSION['userType']), ['admin', 'administrator'], true)) {
     die("<h2 style='color:red; text-align:center; margin-top:50px;'>Access Denied. Admins Only.</h2>");
 }
 
 include "../database/conn.php";
 
-//Join function with user table
 $sql = "SELECT l.log_id, l.action, l.description, l.log_date, u.username, u.userType 
             FROM system_logs l 
             LEFT JOIN user u ON l.user_id = u.user_id 
