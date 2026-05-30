@@ -19,6 +19,8 @@ if (isset($_POST['update_password'])) {
     $current_password = $_POST['current_password'];
     $new_password = $_POST['new_password'];
     $confirm_password = $_POST['confirm_password'];
+    $current_password_hash = md5($current_password);
+    $new_password_hash = md5($new_password);
 
     
     $stmt = $conn->prepare("SELECT password FROM user WHERE user_id = ?");
@@ -28,7 +30,7 @@ if (isset($_POST['update_password'])) {
     $user_data = $result->fetch_assoc();
     $stmt->close();
 
-    if ($user_data['password'] !== $current_password) {
+    if (!$user_data || $user_data['password'] !== $current_password_hash) {
         $alert_type = "danger";
         $alert_message = "Security Error: The current password you entered is incorrect.";
     } elseif ($new_password !== $confirm_password) {
@@ -36,7 +38,7 @@ if (isset($_POST['update_password'])) {
         $alert_message = "Security Error: The new passwords do not match.";
     } else {
         $update_stmt = $conn->prepare("UPDATE user SET password = ? WHERE user_id = ?");
-        $update_stmt->bind_param("si", $new_password, $user_id);
+        $update_stmt->bind_param("si", $new_password_hash, $user_id);
         if ($update_stmt->execute()) {
             $alert_type = "success";
             $alert_message = "Your password has been changed successfully.";
@@ -67,6 +69,9 @@ if (isset($_POST['update_pfp']) && isset($_FILES['profilePic']) && $_FILES['prof
         if ($update_stmt->execute()) {
             $alert_type = "success";
             $alert_message = "Your profile picture has been updated.";
+        } else {
+            $alert_type = "danger";
+            $alert_message = "Database error while updating profile picture.";
         }
         $update_stmt->close();
     } else {
@@ -145,6 +150,22 @@ function resolve_profile_picture_src($pfpPath, $username)
             object-fit: cover; 
             border: 3px solid #dc3545; 
         }
+        .profile-preview-wrap {
+            position: relative;
+            display: inline-block;
+        }
+        .profile-preview-badge {
+            position: absolute;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #fff;
+            border-radius: 999px;
+            padding: 0.35rem 0.6rem;
+            font-size: 0.75rem;
+            line-height: 1;
+        }
     </style>
 </head>
 <body class="min-vh-100">
@@ -173,7 +194,10 @@ function resolve_profile_picture_src($pfpPath, $username)
                     <?php 
                         $pfp = resolve_profile_picture_src($user['pfp_imgPath'] ?? '', $user['username'] ?? 'User');
                     ?>
-                    <img src="<?php echo htmlspecialchars($pfp, ENT_QUOTES, 'UTF-8'); ?>" class="rounded-circle profile-img shadow mb-3" alt="Profile Picture">
+                    <div class="profile-preview-wrap mb-3">
+                        <img id="profilePreview" src="<?php echo htmlspecialchars($pfp, ENT_QUOTES, 'UTF-8'); ?>" class="rounded-circle profile-img shadow" alt="Profile Picture Preview">
+                        <span class="profile-preview-badge">Preview</span>
+                    </div>
                     
                     <h4 class="fw-bold mb-1">
                         <?php echo htmlspecialchars($user['fname'] . ' ' . $user['lname']); ?>
@@ -187,7 +211,7 @@ function resolve_profile_picture_src($pfpPath, $username)
 
                     <form action="" method="POST" enctype="multipart/form-data" class="text-start">
                         <label class="form-label text-secondary small fw-medium mb-2"><i class="bi bi-camera me-1"></i> Update Avatar</label>
-                        <input type="file" name="profilePic" class="form-control form-control-sm mb-3 standard-input" accept="image/*" required>
+                        <input type="file" name="profilePic" id="profilePicInput" class="form-control form-control-sm mb-3 standard-input" accept="image/*" required>
                         <button type="submit" name="update_pfp" class="btn btn-outline-secondary btn-sm w-100 fw-bold rounded-3 btn-custom">Upload Photo</button>
                     </form>
 
@@ -237,5 +261,37 @@ function resolve_profile_picture_src($pfpPath, $username)
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        (function () {
+            const input = document.getElementById('profilePicInput');
+            const preview = document.getElementById('profilePreview');
+            const previewKey = 'absoluteCinemaProfilePreview';
+
+            if (!input || !preview) {
+                return;
+            }
+
+            const cachedPreview = sessionStorage.getItem(previewKey);
+            if (cachedPreview) {
+                preview.src = cachedPreview;
+                sessionStorage.removeItem(previewKey);
+            }
+
+            input.addEventListener('change', function () {
+                const file = this.files && this.files[0];
+                if (!file) {
+                    return;
+                }
+
+                const reader = new FileReader();
+                reader.onload = function (event) {
+                    const dataUrl = event.target.result;
+                    preview.src = dataUrl;
+                    sessionStorage.setItem(previewKey, dataUrl);
+                };
+                reader.readAsDataURL(file);
+            });
+        })();
+    </script>
 </body>
 </html>
