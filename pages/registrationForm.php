@@ -28,12 +28,21 @@ if (isset($_POST['register'])) {
            
             $pfp_imgPath = "";
             if (isset($_FILES['upload_img']) && $_FILES['upload_img']['error'] == 0) {
-                
-                
-                $pfp_imgPath = basename($_FILES["upload_img"]["name"]);
+                $target_dir = __DIR__ . "/uploads/profile_pics/";
+                $public_dir = "uploads/profile_pics/";
+                if (!file_exists($target_dir)) {
+                    mkdir($target_dir, 0777, true);
+                }
+
+                $file_name = rand(1000,9999) . '_' . basename($_FILES["upload_img"]["name"]);
+                $pfp_fs_path = $target_dir . $file_name;
+                $pfp_imgPath = $public_dir . $file_name;
+
+                if (!move_uploaded_file($_FILES["upload_img"]["tmp_name"], $pfp_fs_path)) {
+                    $pfp_imgPath = '';
+                }
             }
 
-            
             if (empty($pfp_imgPath)) {
                 $pfp_imgPath = 'assets/icons/user.png';
             }
