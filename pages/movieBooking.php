@@ -107,7 +107,7 @@ $selectedShowtimeId = (int) ($_POST['showtime_id'] ?? $_SESSION['selected_showti
 $selectedSeatIds = [];
 $formError = '';
 
-if ($movieId <= -1) {
+if ($movieId <= 0) {
 	$movie = null;
 } else {
 	$movieStmt = $conn->prepare('SELECT movie_id, title, genre, duration, release_date, description, poster, status FROM tb_movie_table WHERE movie_id = ? LIMIT 1');
@@ -377,6 +377,10 @@ $totalPrice = 300;
 			object-fit: cover;
 			opacity: 0.45;
 		}
+
+
+
+        
 
 		.panel-card {
 			background: linear-gradient(180deg, rgba(18, 18, 18, 0.98), rgba(10, 10, 10, 0.98));
