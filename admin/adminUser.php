@@ -10,17 +10,15 @@ include "../database/conn.php";
 $message='';
 
 if (isset($_POST['update_user'])) {
+    $id = $_POST['user_id'];
     $username = $_POST['username'];
     $email = $_POST['email'];
     $userType = $_POST['userType'];
-    $password = md5($_POST['password']);
     $fname = $_POST['fname'];
     $lname = $_POST['lname'];
-
-    
-    $stmt = $conn->prepare('UPDATE user SET username = ?, email = ?, userType = ?, password = ?, fname = ?, lname = ? WHERE user_id = ?');
+    $stmt = $conn->prepare('UPDATE db_movie_booking.user SET username = ?, email = ?, userType = ?, fname = ?, lname = ? WHERE user_id = ?');
     if ($stmt) {
-        $stmt->bind_param('sssi', $username, $email, $userType, $password, $fname,$lname, $id);
+        $stmt->bind_param('sssssi', $username, $email, $userType, $fname,$lname, $id);
         if ($stmt->execute()) {
             $message = 'User updated successfully.';
         } else {
@@ -91,7 +89,7 @@ $users = $conn->query("SELECT * FROM user");
                                     <i class="bi bi-pencil"></i>
                                 </button>
                                 
-                                <form method="POST" class="d-inline">
+                                <form method="POST" class="d-inline" action="adminUser.php">
                                     <input type="hidden" name="user_id" value="<?php echo $row['user_id']; ?>">
                                     <button type="submit" name="delete_user" class="btn btn-sm btn-outline-danger" <?php echo ($row['userType'] == 'admin') ? 'disabled' : ''; ?> onclick="return confirm('Delete this user?');">
                                         <i class="bi bi-trash"></i>
@@ -116,7 +114,7 @@ $users = $conn->query("SELECT * FROM user");
                         <h5 class="modal-title fw-bold text-danger">Update User</h5>
                         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
-                    <form method="POST">
+                    <form action="adminUser.php" method="POST">
                         <div class="modal-body row g-3">
                             <input type="hidden" name="user_id" value="<?php echo $row['user_id']; ?>">
                             
@@ -129,20 +127,17 @@ $users = $conn->query("SELECT * FROM user");
                                 <label class="form-label fw-bold">Email</label>
                                 <input type="email" class="form-control bg-dark text-white border-secondary" name="email" value="<?php echo $row['email']; ?>" required>
                             </div>
-                            
+
                             <div class="col-12">
                                 <label class="form-label fw-bold">User Type</label>
                                 <select class="form-select bg-dark text-white border-secondary" name="userType" required>
-                                    <option value="User">User</option>
-                                    <option value="Administrator">Administrator</option>
-                                    <option value="Employee">Employee</option>
+                                    <option value="User" <?php if($row['userType'] == 'User') echo "selected"?> >User</option>
+                                    <option value="Administrator" <?php if($row['userType'] == 'Administrator') echo "selected"?> >Administrator</option>
+                                    <option value="Employee" <?php if($row['userType'] == 'Employee') echo "selected"?>>Employee</option>
                                 </select>
                             </div>
 
-                            <div class="col-12">
-                                <label class="form-label fw-bold">Password</label>
-                                <input type="text" class="form-control bg-dark text-white border-secondary" name="password" value="Change password?">
-                            </div>
+                
                             <div class="col-12">
                                 <label class="form-label fw-bold">First Name</label>
                                 <input type="text" class="form-control bg-dark text-white border-secondary" name="fname" value="<?php echo $row['fname']; ?>">
@@ -152,6 +147,10 @@ $users = $conn->query("SELECT * FROM user");
                                 <input type="text" class="form-control bg-dark text-white border-secondary" name="lname" value="<?php echo $row['lname']; ?>">
                             </div>
 
+                            <div class="modal-footer border-secondary">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                <button type="submit" name="update_user" class="btn btn-danger fw-bold">Save Changes</button>
+                            </div>
                         </div>
 
                     </form>
