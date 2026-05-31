@@ -1,0 +1,32 @@
+version: '3.8'
+
+services:
+  # The PHP Apache Web Server
+  web-app:
+    build: .
+    container_name: Carrillo_Lingad_Reyes_movie_booking
+    ports:
+      - "8080:80"
+    depends_on:
+      - db
+    restart: always
+    environment:
+      - DB_HOST=localhost
+      - DB_USER=root
+      - DB_PASS=
+      - DB_NAME=db_movie_booking
+
+  # The MySQL Database (Replaces XAMPP's MySQL)
+  db:
+    image: mysql:8.0
+    container_name: MySQL-DB_Carrillo_Lingad_Reyes_movie_booking
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: 
+      MYSQL_DATABASE: db_movie_booking
+      MYSQL_ALLOW_EMPTY_PASSWORD: 0
+      MYSQL_RANDOM_ROOT_PASSWORD: 0
+    ports:
+      - "3306:3306"
+    volumes:
+      - ./db:/docker-entrypoint-initdb.d

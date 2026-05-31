@@ -1,6 +1,7 @@
 <?php
 require_once '../database/conn.php';
 
+
 function f($value)
 {
     return htmlspecialchars((string) $value, ENT_QUOTES, 'UTF-8');
